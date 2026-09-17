@@ -1,0 +1,322 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#123C2C">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
+<style>
+html{color-scheme:light dark}
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0;font-size:14px;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;background:#F4F6F1}
+img{max-width:100%}
+[hidden]{display:none!important}
+</style>
+<title>Semáforo de Mostrador</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap">
+</head>
+<body>
+<style>
+:root{
+  --ground:#F4F6F1; --surface:#FFFFFF; --surface2:#EAEEE6;
+  --ink:#15211B; --muted:#5C6A61; --faint:#8A968D; --line:#DCE2D9;
+  --brand:#123C2C; --brandink:#F1F6EE; --brandline:#2A5B45;
+  --rojo:#A8201A; --rojobg:#FBEAE8; --rojoline:#E5B0AA;
+  --ambar:#84560A; --ambarbg:#FAF0DC; --ambarline:#E3C585;
+  --verde:#1B6A46; --verdebg:#E4F1E9; --verdeline:#A6D0B7;
+  --focus:#2E7D64;
+  --sh:0 1px 2px rgba(18,60,44,.06), 0 6px 18px -10px rgba(18,60,44,.22);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --ground:#0F130F; --surface:#171C17; --surface2:#212820;
+  --ink:#E7EEE6; --muted:#9EAD9E; --faint:#77867A; --line:#2B332B;
+  --brand:#0E2A20; --brandink:#DCE9DF; --brandline:#27483A;
+  --rojo:#FF9E93; --rojobg:#2D1512; --rojoline:#5A2922;
+  --ambar:#EFC178; --ambarbg:#2A2012; --ambarline:#53401E;
+  --verde:#79D2A2; --verdebg:#122619; --verdeline:#26482F;
+  --focus:#6FC9A4;
+  --sh:0 1px 2px rgba(0,0,0,.4), 0 8px 22px -12px rgba(0,0,0,.7);
+}}
+:root[data-theme="dark"]{
+  --ground:#0F130F; --surface:#171C17; --surface2:#212820;
+  --ink:#E7EEE6; --muted:#9EAD9E; --faint:#77867A; --line:#2B332B;
+  --brand:#0E2A20; --brandink:#DCE9DF; --brandline:#27483A;
+  --rojo:#FF9E93; --rojobg:#2D1512; --rojoline:#5A2922;
+  --ambar:#EFC178; --ambarbg:#2A2012; --ambarline:#53401E;
+  --verde:#79D2A2; --verdebg:#122619; --verdeline:#26482F;
+  --focus:#6FC9A4;
+  --sh:0 1px 2px rgba(0,0,0,.4), 0 8px 22px -12px rgba(0,0,0,.7);
+}
+
+*{box-sizing:border-box}
+body{background:var(--ground);color:var(--ink);font-family:Archivo,system-ui,-apple-system,"Segoe UI",sans-serif;font-size:15px;line-height:1.5;-webkit-text-size-adjust:100%}
+h1,h2,h3{margin:0;text-wrap:balance}
+p{margin:0}
+button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px;border-radius:4px}
+.wrap{max-width:780px;margin:0 auto;padding-inline:16px}
+
+/* ---- header ---- */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--brand);color:var(--brandink);border-bottom:1px solid var(--brandline)}
+.topin{display:flex;align-items:center;gap:12px;padding-block:11px}
+.mark{font-family:Fraunces,Georgia,serif;font-weight:700;font-size:19px;letter-spacing:-.01em;line-height:1.1}
+.mark span{display:block;font-family:Archivo,sans-serif;font-weight:500;font-size:10px;letter-spacing:.14em;text-transform:uppercase;opacity:.62;margin-top:2px}
+.pcount{margin-left:auto;display:flex;align-items:center;gap:8px}
+.pill{font-size:12px;font-weight:600;padding:5px 10px;border-radius:999px;border:1px solid var(--brandline);background:rgba(255,255,255,.07);white-space:nowrap}
+.pill.on{background:#E8B44A;color:#2A1D00;border-color:#E8B44A}
+.tabs{display:flex;gap:2px;padding-bottom:9px}
+.tab{flex:1;text-align:center;font-size:13px;font-weight:600;padding:8px 6px;border-radius:8px;color:var(--brandink);opacity:.6}
+.tab[aria-selected="true"]{background:rgba(255,255,255,.13);opacity:1}
+
+main{padding-block:18px 56px}
+
+/* ---- search ---- */
+.searchbox{position:relative;margin-bottom:14px}
+#q{width:100%;padding:14px 14px 14px 42px;font-size:16px;font-weight:500;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--ink);box-shadow:var(--sh)}
+#q::placeholder{color:var(--faint);font-weight:400}
+.mag{position:absolute;left:15px;top:50%;transform:translateY(-50%);color:var(--faint);pointer-events:none;font-size:15px}
+
+/* ---- generic blocks ---- */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:var(--sh)}
+.sechead{display:flex;align-items:baseline;gap:8px;margin:26px 0 10px}
+.sechead h2{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.sechead .n{font-size:12px;color:var(--faint);font-variant-numeric:tabular-nums}
+.note{color:var(--muted);font-size:13.5px}
+
+/* ---- result list ---- */
+.list{display:flex;flex-direction:column;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.row{display:flex;align-items:center;gap:11px;width:100%;text-align:left;padding:12px 14px;background:var(--surface)}
+.row:hover{background:var(--surface2)}
+.dot{width:9px;height:9px;border-radius:50%;flex:none}
+.dot.R{background:var(--rojo)} .dot.A{background:var(--ambar)} .dot.V{background:var(--verde)}
+.rw{min-width:0;flex:1}
+.rw b{display:block;font-weight:600;font-size:14.5px;overflow-wrap:anywhere}
+.rw small{display:block;color:var(--faint);font-size:12px;margin-top:1px;overflow-wrap:anywhere}
+.chevron{color:var(--faint);flex:none;font-size:13px}
+
+/* ---- verdict ---- */
+.verdict{border-radius:14px;overflow:hidden;border:1px solid var(--line);box-shadow:var(--sh);background:var(--surface)}
+.vhead{padding:16px 16px 14px;border-left:6px solid}
+.verdict.R .vhead{background:var(--rojobg);border-left-color:var(--rojo)}
+.verdict.A .vhead{background:var(--ambarbg);border-left-color:var(--ambar)}
+.verdict.V .vhead{background:var(--verdebg);border-left-color:var(--verde)}
+.vlabel{font-size:11px;font-weight:700;letter-spacing:.13em;text-transform:uppercase}
+.verdict.R .vlabel{color:var(--rojo)} .verdict.A .vlabel{color:var(--ambar)} .verdict.V .vlabel{color:var(--verde)}
+.vtitle{font-family:Fraunces,Georgia,serif;font-size:26px;font-weight:700;letter-spacing:-.015em;margin-top:4px;line-height:1.15}
+.verdict.R .vtitle{color:var(--rojo)} .verdict.A .vtitle{color:var(--ambar)} .verdict.V .vtitle{color:var(--verde)}
+.vsub{font-size:13.5px;color:var(--muted);margin-top:6px}
+.prodname{font-family:Fraunces,Georgia,serif;font-size:20px;font-weight:600;letter-spacing:-.01em;padding:14px 16px 0}
+.prodmeta{padding:3px 16px 0;font-size:12.5px;color:var(--faint)}
+.prodmeta i{font-style:italic}
+.vbody{padding:14px 16px 16px;display:flex;flex-direction:column;gap:14px}
+
+.reasons{display:flex;flex-direction:column;gap:9px}
+.reason{display:flex;gap:10px;padding:11px 12px;border-radius:9px;border:1px solid}
+.reason.R{background:var(--rojobg);border-color:var(--rojoline)}
+.reason.A{background:var(--ambarbg);border-color:var(--ambarline)}
+.reason.V{background:var(--verdebg);border-color:var(--verdeline)}
+.tag{flex:none;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:3px 7px;border-radius:5px;height:fit-content;white-space:nowrap}
+.reason.R .tag{background:var(--rojo);color:var(--rojobg)}
+.reason.A .tag{background:var(--ambar);color:var(--ambarbg)}
+.reason.V .tag{background:var(--verde);color:var(--verdebg)}
+.reason p{font-size:13.5px}
+.reason p b{display:block;font-size:12px;font-weight:700;letter-spacing:.02em;margin-bottom:2px}
+.reason.R p b{color:var(--rojo)} .reason.A p b{color:var(--ambar)} .reason.V p b{color:var(--verde)}
+
+.kv{display:grid;grid-template-columns:auto 1fr;gap:5px 12px;font-size:13.5px}
+.kv dt{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);padding-top:3px;white-space:nowrap}
+.kv dd{margin:0}
+details{border-top:1px solid var(--line);padding-top:12px}
+summary{cursor:pointer;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);list-style:none}
+summary::-webkit-details-marker{display:none}
+summary::before{content:"▸ ";color:var(--faint)}
+details[open] summary::before{content:"▾ "}
+.allrisks{display:flex;flex-direction:column;gap:7px;margin-top:11px}
+.ar{display:flex;gap:9px;font-size:13px;color:var(--muted)}
+.ar .b{flex:none;width:7px;height:7px;border-radius:50%;margin-top:6px}
+.ar .b.R{background:var(--rojo)} .ar .b.A{background:var(--ambar)} .ar .b.V{background:var(--verde)}
+.ar em{font-style:normal;font-weight:600;color:var(--ink)}
+
+.back{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--muted);margin-bottom:12px}
+
+/* ---- chips ---- */
+.grp{margin-bottom:22px}
+.grp h3{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.grp .hint{font-size:12.5px;color:var(--faint);margin-bottom:10px}
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chip{font-size:13px;font-weight:500;padding:8px 12px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--muted);line-height:1.25;text-align:left}
+.chip[aria-pressed="true"]{background:var(--brand);border-color:var(--brandline);color:var(--brandink);font-weight:600}
+
+/* ---- guide ---- */
+.guide{display:flex;flex-direction:column;gap:14px}
+.gcard{padding:16px;background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:var(--sh)}
+.gcard h3{font-family:Fraunces,Georgia,serif;font-size:18px;font-weight:600;letter-spacing:-.01em;margin-bottom:9px}
+.gcard p+p,.gcard ol,.gcard ul{margin-top:9px}
+.gcard ol,.gcard ul{padding-left:20px;display:flex;flex-direction:column;gap:7px;font-size:14px}
+.gcard li::marker{color:var(--faint);font-weight:600}
+.say{display:grid;grid-template-columns:1fr;gap:10px;margin-top:10px}
+@media(min-width:560px){.say{grid-template-columns:1fr 1fr}}
+.say>div{padding:12px;border-radius:9px;border:1px solid}
+.say .ok{background:var(--verdebg);border-color:var(--verdeline)}
+.say .no{background:var(--rojobg);border-color:var(--rojoline)}
+.say h4{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:7px}
+.say .ok h4{color:var(--verde)} .say .no h4{color:var(--rojo)}
+.say ul{margin:0;padding-left:17px;gap:5px;font-size:13.5px}
+.disc{font-size:12.5px;color:var(--faint);line-height:1.55;border-top:1px solid var(--line);margin-top:26px;padding-top:16px}
+.disc strong{color:var(--muted)}
+.empty{padding:28px 18px;text-align:center;color:var(--muted);font-size:14px}
+.star{color:#C58A12}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<header class="top">
+  <div class="wrap">
+    <div class="topin">
+      <div class="mark">Mostrador<span>Semáforo de seguridad</span></div>
+      <div class="pcount">
+        <button class="pill" id="pillBtn" type="button">Sin perfil</button>
+        <button class="pill" id="resetBtn" type="button" hidden aria-label="Empezar con un cliente nuevo">Nuevo cliente</button>
+      </div>
+    </div>
+    <div class="tabs" role="tablist">
+      <button class="tab" role="tab" id="t-consulta" aria-selected="true" type="button">Consultar</button>
+      <button class="tab" role="tab" id="t-perfil" aria-selected="false" type="button">Cliente</button>
+      <button class="tab" role="tab" id="t-guia" aria-selected="false" type="button">Guía</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <section id="v-consulta">
+    <div class="searchbox">
+      <span class="mag">⌕</span>
+      <input id="q" type="search" autocomplete="off" placeholder="«algo para dormir mejor» o «magnesio»" aria-label="Buscar por necesidad o por producto">
+    </div>
+    <div id="consultaBody"></div>
+  </section>
+
+  <section id="v-perfil" hidden>
+    <p class="note" style="margin-bottom:18px">Marca lo que te cuente el cliente. Cada cosa que marques cambia el semáforo de todos los productos. No hace falta que sea exhaustivo: con la medicación y dos o tres condiciones ya filtras casi todo.</p>
+    <div id="chipGroups"></div>
+    <button class="chip" id="clearBtn" type="button" style="margin-top:4px">Limpiar todo el perfil</button>
+  </section>
+
+  <section id="v-guia" hidden>
+    <div class="guide">
+      <div class="gcard">
+        <h3>Las seis preguntas del mostrador</h3>
+        <p class="note">Hazlas siempre, en este orden, antes de recomendar nada. Tardan veinte segundos y te cubren el 90 % de los riesgos.</p>
+        <ol>
+          <li><b>¿Toma alguna medicación a diario?</b> — y cuál. Si no se acuerda, que te enseñe la caja o la foto del móvil.</li>
+          <li><b>¿Está embarazada, dando el pecho o buscando embarazo?</b></li>
+          <li><b>¿Tiene diabetes, tensión alta, algo de tiroides, riñón o hígado?</b></li>
+          <li><b>¿Es alérgico a algo?</b> — pescado, marisco, frutos secos, lácteos, polen, abejas.</li>
+          <li><b>¿Le van a operar o le van a sacar sangre próximamente?</b></li>
+          <li><b>¿Está tomando ya algún otro complemento?</b> — para no duplicar dosis.</li>
+        </ol>
+      </div>
+
+      <div class="gcard">
+        <h3>Cuándo NO vendes y derivas, sin excepción</h3>
+        <ul>
+          <li>Toma <b>Sintrom / acenocumarol</b> o cualquier anticoagulante y el producto toca la coagulación.</li>
+          <li>Toma <b>antidepresivos</b> y el producto es serotoninérgico (5-HTP, triptófano, SAMe, hipérico).</li>
+          <li>Es <b>trasplantado</b> o toma inmunosupresores.</li>
+          <li>Está en <b>tratamiento oncológico activo</b>.</li>
+          <li>Está <b>embarazada</b> y no es un producto específico de gestación.</li>
+          <li>Te describe un <b>síntoma que no has diagnosticado tú</b>: dolor persistente, sangrado, pérdida de peso sin explicación, bulto, fiebre mantenida. Eso es del médico.</li>
+          <li>Quiere <b>sustituir</b> un medicamento que le ha pautado su médico.</li>
+        </ul>
+        <p class="note" style="margin-top:11px">Frase que te saca de cualquier apuro: <i>«Esto puede interferir con su tratamiento. Le doy la información del producto y lo comenta con su médico o su farmacéutico; si le dan el visto bueno, se lo preparo encantado.»</i> Derivar no es perder una venta, es ganar un cliente que vuelve.</p>
+      </div>
+
+      <div class="gcard">
+        <h3>Qué puedes decir y qué no</h3>
+        <p class="note">Los complementos alimenticios son <b>alimentos</b>, no medicamentos. La normativa (Reglamento CE 1924/2006 y Reglamento UE 432/2012) solo permite las declaraciones de salud autorizadas, y prohíbe atribuir a un alimento la capacidad de prevenir, tratar o curar una enfermedad. Esto aplica a lo que dices en el mostrador, no solo a la etiqueta.</p>
+        <div class="say">
+          <div class="ok">
+            <h4>Sí puedes decir</h4>
+            <ul>
+              <li>«El magnesio contribuye a disminuir el cansancio y la fatiga.»</li>
+              <li>«La vitamina D contribuye al mantenimiento de los huesos.»</li>
+              <li>«Tradicionalmente se ha usado para…»</li>
+              <li>«Esta es la información del fabricante.»</li>
+            </ul>
+          </div>
+          <div class="no">
+            <h4>No puedes decir</h4>
+            <ul>
+              <li>«Esto te cura / te quita la artrosis.»</li>
+              <li>«Esto te baja el colesterol» o «la tensión».</li>
+              <li>«Puedes dejar la pastilla y tomar esto.»</li>
+              <li>«Previene el cáncer / la diabetes.»</li>
+              <li>Cualquier diagnóstico. Tú no diagnosticas.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="gcard">
+        <h3>Límites legales que conviene tener en la cabeza</h3>
+        <ul>
+          <li><b>Monacolina K</b> (levadura roja de arroz): menos de 3 mg/día y con advertencias obligatorias — Reglamento UE 2022/860. El Reglamento UE 2024/2041 retiró su declaración de salud.</li>
+          <li><b>EGCG</b> (extracto de té verde): por debajo de 800 mg/día y con advertencia de hepatotoxicidad — Reglamento UE 2022/2340.</li>
+          <li><b>Vitamina B6</b>: la EFSA bajó el nivel máximo tolerable a 12 mg/día en adultos. Muchos complejos B lo superan.</li>
+          <li><b>Selenio</b>: nivel máximo 255 µg/día.</li>
+          <li><b>Melatonina</b>: hasta 1,9 mg es complemento; a partir de 2 mg es medicamento y va con receta.</li>
+          <li><b>CBD oral, DHEA, NMN, yohimbina, kava, efedra, plata coloidal</b>: no autorizados o prohibidos como complemento alimenticio en España. Revisa tu lineal.</li>
+          <li>Todo complemento que vendas debe estar <b>notificado ante AESAN</b> o la autoridad autonómica: pídeselo a tus proveedores por escrito.</li>
+        </ul>
+      </div>
+
+      <div class="gcard">
+        <h3>Cómo tenerlo a mano en el móvil</h3>
+        <p class="note">Esto es un solo archivo: una vez guardado en el móvil funciona <b>sin internet</b> y sin depender de nada. Guárdalo en un sitio fijo para no ir buscándolo entre las descargas.</p>
+        <p style="margin-top:11px"><b>Android</b></p>
+        <ol>
+          <li>Guarda el archivo en <b>Descargas</b>.</li>
+          <li>Ábrelo desde la app <b>Archivos</b> y elige abrir con <b>Chrome</b>.</li>
+          <li>En Chrome, menú <b>⋮ → Añadir a pantalla de inicio</b>. Ya lo tienes como si fuera una app.</li>
+        </ol>
+        <p style="margin-top:11px"><b>iPhone</b></p>
+        <ol>
+          <li>Abre el archivo en WhatsApp o en el correo y dale a <b>Guardar en Archivos</b>.</li>
+          <li>Guárdalo en <b>En mi iPhone</b>, en una carpeta que llames «Tienda».</li>
+          <li>Ábrelo desde la app <b>Archivos</b> tocándolo. Se abre y funciona igual.</li>
+        </ol>
+        <p class="note" style="margin-top:11px"><b>Aviso honesto sobre el iPhone:</b> iOS no deja poner en la pantalla de inicio un archivo guardado en el móvil, solo páginas web. En iPhone tendrás que entrar por la app Archivos cada vez. Si eso te resulta incómodo con los empleados, la solución es colgarlo en una dirección web —en tu propio dominio o en un alojamiento gratuito— y entonces sí se pone el icono en la pantalla de inicio en cualquier móvil. Se monta en unos minutos cuando quieras.</p>
+        <p class="note" style="margin-top:11px">Cada vez que ampliemos la base de productos te paso un archivo nuevo y se sustituye por el anterior. Si lo tienes en una web, se actualiza solo para todos.</p>
+      </div>
+
+      <div class="gcard">
+        <h3>Cómo mantener esto vivo</h3>
+        <p class="note">Esta herramienta es un cribado, no una base de datos clínica. Dos cosas que deberías hacer:</p>
+        <ul>
+          <li><b>Que te lo revise un farmacéutico</b> antes de usarlo con clientes. Un colegiado que te valide el contenido y te firme el visto bueno vale mucho, también si algún día hay una reclamación.</li>
+          <li><b>Consulta la fuente oficial cuando el caso sea serio.</b> Para interacciones con medicamentos concretos, el <b>Bot PLUS</b> del Consejo General de Colegios Farmacéuticos y el <b>CIMA</b> de la AEMPS son las referencias en España. Para plantas, <b>NatMed Pro</b> y <b>About Herbs</b> del Memorial Sloan Kettering.</li>
+          <li><b>Apunta lo que te vaya pasando.</b> Cada caso raro que te encuentres, anótalo y lo añadimos.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <p class="disc">
+    <strong>Esto no es un consejo médico ni sustituye a un profesional sanitario.</strong> Es una herramienta interna de cribado para el personal de la tienda, construida a partir de fuentes de referencia en seguridad de complementos alimenticios. No cubre todos los productos, todas las interacciones ni todos los casos, y la información sobre complementos cambia. Ante cualquier duda, ante medicación crónica, embarazo, tratamiento oncológico o síntomas sin diagnosticar: no vendas y deriva al médico o al farmacéutico. La decisión final y la responsabilidad de la venta son siempre tuyas.
+  </p>
+</main>
+
+<script src="d1.js"></script>
+<script src="d2.js"></script>
+<script src="d3.js"></script>
+<script src="d4.js"></script>
+<script src="d5.js"></script>
+<script src="d6.js"></script>
+<script src="d7.js"></script>
+<script src="needs.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
