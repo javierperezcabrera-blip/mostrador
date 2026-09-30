@@ -4,52 +4,56 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
-<meta name="theme-color" content="#123C2C">
+<meta name="theme-color" content="#265B51">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="mobile-web-app-capable" content="yes">
+<meta name="description" content="MAVIA - Semaforo de mostrador. Herramienta interna de cribado de seguridad.">
 <style>
 html{color-scheme:light dark}
 :root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-body{margin:0;font-size:14px;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;background:#F4F6F1}
+body{margin:0;font-size:14px;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;background:#ECE8DF}
 img{max-width:100%}
 [hidden]{display:none!important}
 </style>
-<title>Semáforo de Mostrador</title>
+<title>Semáforo MAVIA</title>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap">
 </head>
 <body>
 <style>
 :root{
-  --ground:#F4F6F1; --surface:#FFFFFF; --surface2:#EAEEE6;
-  --ink:#15211B; --muted:#5C6A61; --faint:#8A968D; --line:#DCE2D9;
-  --brand:#123C2C; --brandink:#F1F6EE; --brandline:#2A5B45;
-  --rojo:#A8201A; --rojobg:#FBEAE8; --rojoline:#E5B0AA;
-  --ambar:#84560A; --ambarbg:#FAF0DC; --ambarline:#E3C585;
-  --verde:#1B6A46; --verdebg:#E4F1E9; --verdeline:#A6D0B7;
-  --focus:#2E7D64;
-  --sh:0 1px 2px rgba(18,60,44,.06), 0 6px 18px -10px rgba(18,60,44,.22);
+  --ground:#ECE8DF; --surface:#FBF9F5; --surface2:#E3DED2;
+  --ink:#1B2A24; --muted:#6B6B60; --faint:#95948A; --line:#D8D2C4;
+  --brand:#265B51; --brandink:#F3F1EA; --brandline:#3E7469;
+  --lima:#C8CE6C; --limaink:#2A2E0E;
+  --rojo:#A8201A; --rojobg:#F8E7E4; --rojoline:#E0ACA5;
+  --ambar:#8A5A08; --ambarbg:#F7EFD9; --ambarline:#DFC182;
+  --verde:#2F7D53; --verdebg:#E4EFE4; --verdeline:#A8CCAE;
+  --focus:#265B51;
+  --sh:0 1px 2px rgba(38,91,81,.07), 0 6px 18px -10px rgba(38,91,81,.26);
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --ground:#0F130F; --surface:#171C17; --surface2:#212820;
-  --ink:#E7EEE6; --muted:#9EAD9E; --faint:#77867A; --line:#2B332B;
-  --brand:#0E2A20; --brandink:#DCE9DF; --brandline:#27483A;
+  --ground:#111714; --surface:#19201C; --surface2:#242C26;
+  --ink:#E9EDE4; --muted:#A3AC9C; --faint:#7D8778; --line:#2C352F;
+  --brand:#173A31; --brandink:#E7EFE6; --brandline:#2E5A4E;
+  --lima:#C8CE6C; --limaink:#1B2010;
   --rojo:#FF9E93; --rojobg:#2D1512; --rojoline:#5A2922;
   --ambar:#EFC178; --ambarbg:#2A2012; --ambarline:#53401E;
-  --verde:#79D2A2; --verdebg:#122619; --verdeline:#26482F;
-  --focus:#6FC9A4;
-  --sh:0 1px 2px rgba(0,0,0,.4), 0 8px 22px -12px rgba(0,0,0,.7);
+  --verde:#7FD3A4; --verdebg:#132719; --verdeline:#28492F;
+  --focus:#9BD7C2;
+  --sh:0 1px 2px rgba(0,0,0,.45), 0 8px 22px -12px rgba(0,0,0,.75);
 }}
 :root[data-theme="dark"]{
-  --ground:#0F130F; --surface:#171C17; --surface2:#212820;
-  --ink:#E7EEE6; --muted:#9EAD9E; --faint:#77867A; --line:#2B332B;
-  --brand:#0E2A20; --brandink:#DCE9DF; --brandline:#27483A;
+  --ground:#111714; --surface:#19201C; --surface2:#242C26;
+  --ink:#E9EDE4; --muted:#A3AC9C; --faint:#7D8778; --line:#2C352F;
+  --brand:#173A31; --brandink:#E7EFE6; --brandline:#2E5A4E;
+  --lima:#C8CE6C; --limaink:#1B2010;
   --rojo:#FF9E93; --rojobg:#2D1512; --rojoline:#5A2922;
   --ambar:#EFC178; --ambarbg:#2A2012; --ambarline:#53401E;
-  --verde:#79D2A2; --verdebg:#122619; --verdeline:#26482F;
-  --focus:#6FC9A4;
-  --sh:0 1px 2px rgba(0,0,0,.4), 0 8px 22px -12px rgba(0,0,0,.7);
+  --verde:#7FD3A4; --verdebg:#132719; --verdeline:#28492F;
+  --focus:#9BD7C2;
+  --sh:0 1px 2px rgba(0,0,0,.45), 0 8px 22px -12px rgba(0,0,0,.75);
 }
 
 *{box-sizing:border-box}
@@ -63,11 +67,13 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
 /* ---- header ---- */
 .top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--brand);color:var(--brandink);border-bottom:1px solid var(--brandline)}
 .topin{display:flex;align-items:center;gap:12px;padding-block:11px}
-.mark{font-family:Fraunces,Georgia,serif;font-weight:700;font-size:19px;letter-spacing:-.01em;line-height:1.1}
-.mark span{display:block;font-family:Archivo,sans-serif;font-weight:500;font-size:10px;letter-spacing:.14em;text-transform:uppercase;opacity:.62;margin-top:2px}
+.mark{line-height:1}
+.mark b{display:block;font-family:"Playfair Display",Georgia,serif;font-weight:700;font-size:22px;letter-spacing:.115em;line-height:1}
+.mark b i{font-style:normal;color:var(--lima)}
+.mark span{display:block;font-family:Archivo,sans-serif;font-weight:500;font-size:9px;letter-spacing:.17em;text-transform:uppercase;opacity:.66;margin-top:5px}
 .pcount{margin-left:auto;display:flex;align-items:center;gap:8px}
 .pill{font-size:12px;font-weight:600;padding:5px 10px;border-radius:999px;border:1px solid var(--brandline);background:rgba(255,255,255,.07);white-space:nowrap}
-.pill.on{background:#E8B44A;color:#2A1D00;border-color:#E8B44A}
+.pill.on{background:var(--lima);color:var(--limaink);border-color:var(--lima)}
 .tabs{display:flex;gap:2px;padding-bottom:9px}
 .tab{flex:1;text-align:center;font-size:13px;font-weight:600;padding:8px 6px;border-radius:8px;color:var(--brandink);opacity:.6}
 .tab[aria-selected="true"]{background:rgba(255,255,255,.13);opacity:1}
@@ -106,10 +112,10 @@ main{padding-block:18px 56px}
 .verdict.V .vhead{background:var(--verdebg);border-left-color:var(--verde)}
 .vlabel{font-size:11px;font-weight:700;letter-spacing:.13em;text-transform:uppercase}
 .verdict.R .vlabel{color:var(--rojo)} .verdict.A .vlabel{color:var(--ambar)} .verdict.V .vlabel{color:var(--verde)}
-.vtitle{font-family:Fraunces,Georgia,serif;font-size:26px;font-weight:700;letter-spacing:-.015em;margin-top:4px;line-height:1.15}
+.vtitle{font-family:Playfair Display,Georgia,serif;font-size:26px;font-weight:700;letter-spacing:-.015em;margin-top:4px;line-height:1.15}
 .verdict.R .vtitle{color:var(--rojo)} .verdict.A .vtitle{color:var(--ambar)} .verdict.V .vtitle{color:var(--verde)}
 .vsub{font-size:13.5px;color:var(--muted);margin-top:6px}
-.prodname{font-family:Fraunces,Georgia,serif;font-size:20px;font-weight:600;letter-spacing:-.01em;padding:14px 16px 0}
+.prodname{font-family:Playfair Display,Georgia,serif;font-size:20px;font-weight:600;letter-spacing:-.01em;padding:14px 16px 0}
 .prodmeta{padding:3px 16px 0;font-size:12.5px;color:var(--faint)}
 .prodmeta i{font-style:italic}
 .vbody{padding:14px 16px 16px;display:flex;flex-direction:column;gap:14px}
@@ -154,7 +160,7 @@ details[open] summary::before{content:"▾ "}
 /* ---- guide ---- */
 .guide{display:flex;flex-direction:column;gap:14px}
 .gcard{padding:16px;background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:var(--sh)}
-.gcard h3{font-family:Fraunces,Georgia,serif;font-size:18px;font-weight:600;letter-spacing:-.01em;margin-bottom:9px}
+.gcard h3{font-family:Playfair Display,Georgia,serif;font-size:18px;font-weight:600;letter-spacing:-.01em;margin-bottom:9px}
 .gcard p+p,.gcard ol,.gcard ul{margin-top:9px}
 .gcard ol,.gcard ul{padding-left:20px;display:flex;flex-direction:column;gap:7px;font-size:14px}
 .gcard li::marker{color:var(--faint);font-weight:600}
@@ -166,7 +172,11 @@ details[open] summary::before{content:"▾ "}
 .say h4{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:7px}
 .say .ok h4{color:var(--verde)} .say .no h4{color:var(--rojo)}
 .say ul{margin:0;padding-left:17px;gap:5px;font-size:13.5px}
-.disc{font-size:12.5px;color:var(--faint);line-height:1.55;border-top:1px solid var(--line);margin-top:26px;padding-top:16px}
+.brandfoot{margin-top:34px;text-align:center;font-size:12.5px;color:var(--muted);line-height:1.7}
+.brandfoot b{font-family:"Playfair Display",Georgia,serif;font-weight:700;letter-spacing:.1em;color:var(--ink)}
+.brandfoot b i{font-style:normal;color:var(--lima)}
+.brandfoot span{color:var(--faint);font-size:11.5px}
+.disc{font-size:12.5px;color:var(--faint);line-height:1.55;border-top:1px solid var(--line);margin-top:14px;padding-top:14px}
 .disc strong{color:var(--muted)}
 .empty{padding:28px 18px;text-align:center;color:var(--muted);font-size:14px}
 .star{color:#C58A12}
@@ -176,7 +186,7 @@ details[open] summary::before{content:"▾ "}
 <header class="top">
   <div class="wrap">
     <div class="topin">
-      <div class="mark">Mostrador<span>Semáforo de seguridad</span></div>
+      <div class="mark"><b>MA<i>V</i>IA</b><span>Semáforo de mostrador</span></div>
       <div class="pcount">
         <button class="pill" id="pillBtn" type="button">Sin perfil</button>
         <button class="pill" id="resetBtn" type="button" hidden aria-label="Empezar con un cliente nuevo">Nuevo cliente</button>
@@ -304,6 +314,7 @@ details[open] summary::before{content:"▾ "}
     </div>
   </section>
 
+  <p class="brandfoot"><b>MA<i>V</i>IA</b> · Bienestar con criterio<br><span>Herbolario y Nutrición · Los Cristianos, Tenerife</span></p>
   <p class="disc">
     <strong>Esto no es un consejo médico ni sustituye a un profesional sanitario.</strong> Es una herramienta interna de cribado para el personal de la tienda, construida a partir de fuentes de referencia en seguridad de complementos alimenticios. No cubre todos los productos, todas las interacciones ni todos los casos, y la información sobre complementos cambia. Ante cualquier duda, ante medicación crónica, embarazo, tratamiento oncológico o síntomas sin diagnosticar: no vendas y deriva al médico o al farmacéutico. La decisión final y la responsabilidad de la venta son siempre tuyas.
   </p>
