@@ -35,7 +35,7 @@ var GROUPS = [
    ["herpes","Herpes de repetición"],["fenilcetonuria","Fenilcetonuria"],["fructosa","Intolerancia a la fructosa"]]},
  {id:"alg", t:"Alergias e intolerancias", hint:"Un rojo aquí no se negocia.", keys:[
    ["alergia_pescado","Pescado"],["alergia_marisco","Marisco o crustáceos"],["alergia_lacteos","Leche o lácteos"],
-   ["alergia_frutossecos","Frutos secos, cacahuete o legumbres"],["alergia_soja","Soja"],
+   ["alergia_frutossecos","Frutos secos, cacahuete o legumbres"],["alergia_soja","Soja"],["alergia_sesamo","Sésamo"],
    ["alergia_gluten","Gluten o celiaquía"],["alergia_asteraceas","Pólenes y compuestas"],
    ["alergia_abejas","Abejas y productos apícolas"],["alergia_aspirina","Aspirina o AINE"],
    ["alergia_hongos","Hongos"],["alergia_levadura","Levaduras"],["alergia_latex","Látex"]]}
@@ -64,12 +64,13 @@ var ALMAP = {pescado:"alergia_pescado",marisco:"alergia_marisco",crustaceos:"ale
  trigo:"alergia_gluten",frutossecos:"alergia_frutossecos",cacahuete:"alergia_frutossecos",
  legumbres:"alergia_frutossecos",asteraceas:"alergia_asteraceas",abejas:"alergia_abejas",
  propoleo:"alergia_abejas",polen:"alergia_abejas",hongos:"alergia_hongos",levadura:"alergia_levadura",
- latex:"alergia_latex",aspirina:"alergia_aspirina",salicilatos:"alergia_aspirina"};
+ latex:"alergia_latex",aspirina:"alergia_aspirina",salicilatos:"alergia_aspirina",
+ sesamo:"alergia_sesamo",cacahuete:"alergia_frutossecos"};
 var ALNAME = {pescado:"pescado",marisco:"marisco",crustaceos:"crustáceos",lacteos:"lácteos",huevo:"huevo",
  soja:"soja",gluten:"gluten",trigo:"trigo",frutossecos:"frutos secos",cacahuete:"cacahuete",
  legumbres:"legumbres",asteraceas:"asteráceas",abejas:"productos apícolas",propoleo:"própolis",
  polen:"polen",hongos:"hongos",levadura:"levadura",latex:"látex",aspirina:"salicilatos",
- salicilatos:"salicilatos",solanaceas:"solanáceas",labiadas:"labiadas",coco:"coco",porcino:"origen porcino",
+ salicilatos:"salicilatos",sesamo:"sésamo",solanaceas:"solanáceas",labiadas:"labiadas",coco:"coco",porcino:"origen porcino",
  bovino:"origen bovino",pina:"piña",papaya:"papaya",lanolina:"lanolina"};
 
 /* claves que siempre se muestran aunque no estén en el perfil */
@@ -200,8 +201,9 @@ function prodRowHTML(p){
   var sub = r.length ? r.slice(0,2).map(function(x){return labelOf(x.k)}).join(" · ")+(r.length>2?" +"+(r.length-2):"")
                      : (p.m+" · "+p.f);
   return '<button class="row prow" type="button" data-prod="'+p.id+'"><span class="dot '+lv+'"></span>'+
-    thumb(p)+'<span class="rw"><b>'+esc(p.n)+(p.pend?' <i class="pend">ficha por confirmar</i>':'')+'</b><small>'+esc(sub)+'</small></span>'+
-    '<span class="pvp">'+eur(p.pvp)+'</span></button>';
+    thumb(p)+'<span class="rw"><b>'+esc(p.n)+(p.pend?' <i class="pend">ficha por confirmar</i>':'')+
+    (p.prop?' <i class="prop">propuesta</i>':'')+'</b><small>'+esc(sub)+'</small></span>'+
+    '<span class="pvp">'+(p.prop?'':eur(p.pvp))+'</span></button>';
 }
 function matchProds(tk, term){
   var sc = {};
@@ -244,6 +246,7 @@ function level(p){
   for(var j=0;j<h.length;j++){ if(h[j].l==="A") return "A" }
   return "V";
 }
+function tagOf(x){ return x.k==="_destacado" ? "\u2605" : (x.l==="R" ? "No" : x.l==="A" ? "Ojo" : "Ok") }
 function esc(t){ return String(t).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]}) }
 
 /* ================= render ================= */
@@ -361,12 +364,12 @@ function renderDetail(id){
 
   if(!noProfile && h.length){
     html+='<div class="reasons">'+h.map(function(x){
-      return '<div class="reason '+x.l+'"><span class="tag">'+(x.l==="R"?"No":x.l==="A"?"Ojo":"Ok")+'</span>'+
+      return '<div class="reason '+x.l+'"><span class="tag">'+tagOf(x)+'</span>'+
         '<p><b>'+esc(labelOf(x.k))+'</b>'+esc(x.t)+'</p></div>'}).join("")+'</div>';
   }
   if(gen.length){
     html+='<div><div class="vlabel" style="color:var(--faint);margin-bottom:8px">Avisos para cualquier cliente</div><div class="reasons">'+
-      gen.map(function(x){ return '<div class="reason '+x.l+'"><span class="tag">'+(x.l==="R"?"No":"Ojo")+'</span><p><b>'+esc(labelOf(x.k))+'</b>'+esc(x.t)+'</p></div>' }).join("")+'</div></div>';
+      gen.map(function(x){ return '<div class="reason '+x.l+'"><span class="tag">'+tagOf(x)+'</span><p><b>'+esc(labelOf(x.k))+'</b>'+esc(x.t)+'</p></div>' }).join("")+'</div></div>';
   }
 
   html+='<dl class="kv">'+
@@ -405,17 +408,17 @@ function renderProdDetail(id){
         '<div class="pmeta"><div class="pbrand">'+esc(p.m)+(p.top?' · uso externo':'')+'</div>'+
         '<h2 class="pname">'+esc(p.n)+'</h2>'+
         '<div class="pfmt">'+esc(p.f||"")+'</div>'+
-        (p.pvp?'<div class="pprice">'+eur(p.pvp)+'</div>':'')+'</div></div>'+
+        (p.prop?'<div class="pprice prop2">PVP por fijar</div>':(p.pvp?'<div class="pprice">'+eur(p.pvp)+'</div>':''))+'</div></div>'+
       '<div class="vbody">';
 
   if(!noProfile && prop.length){
     html += '<div class="reasons">'+prop.map(function(x){
-      return '<div class="reason '+x.l+'"><span class="tag">'+(x.l==="R"?"No":x.l==="A"?"Ojo":"Ok")+'</span>'+
+      return '<div class="reason '+x.l+'"><span class="tag">'+tagOf(x)+'</span>'+
         '<p><b>'+esc(labelOf(x.k))+(x.src&&x.src.length?' — '+esc(x.src.join(", ")):'')+'</b>'+esc(x.t)+'</p></div>' }).join("")+'</div>';
   }
   if(gen.length){
     html += '<div><div class="vlabel" style="color:var(--faint);margin-bottom:8px">Avisos para cualquier cliente</div><div class="reasons">'+
-      gen.map(function(x){ return '<div class="reason '+x.l+'"><span class="tag">'+(x.l==="R"?"No":"Ojo")+'</span>'+
+      gen.map(function(x){ return '<div class="reason '+x.l+'"><span class="tag">'+tagOf(x)+'</span>'+
         '<p><b>'+esc(labelOf(x.k))+(x.src&&x.src.length?' — '+esc(x.src.join(", ")):'')+'</b>'+esc(x.t)+'</p></div>' }).join("")+'</div></div>';
   }
 
