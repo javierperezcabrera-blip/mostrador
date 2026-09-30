@@ -144,6 +144,82 @@ function byLevel(list){
   return list.slice().sort(function(a,b){ return ORDER[level(b)]-ORDER[level(a)] });
 }
 
+/* ---- catálogo real de la tienda ---- */
+var PROD = window.PROD || [];
+PROD.forEach(function(p){
+  p._s = norm(p.n+" "+p.m+" "+(p.u||"")+" "+(p.comp||"")+" "+(p.ing||[]).map(function(i){
+    return BYID[i]? BYID[i].n+" "+(BYID[i].a||[]).join(" ") : i }).join(" "));
+});
+var PBYID = {}; PROD.forEach(function(p){ PBYID[p.id]=p });
+
+/* riesgos del producto = los de sus ingredientes + los suyos propios, sin repetir clave */
+function prodRisks(p){
+  var out = {};
+  function put(k, l, t, src, gen){
+    var c = out[k];
+    if(!c){ c = out[k] = {k:k, l:l, t:t, by:{}, gen:gen} }
+    (c.by[l] = c.by[l] || []).push(src);
+    if(ORDER[l] < ORDER[c.l]){ c.l=l; c.t=t; c.gen=gen }
+  }
+  (p.ing||[]).forEach(function(id){
+    var ing = BYID[id]; if(!ing) return;
+    hits(ing).forEach(function(h){ if(h.l!=="V") put(h.k, h.l, h.t, ing.n, false) });
+    // de los avisos generales del ingrediente solo interesa el destacado: el resto es ruido en un multi
+    generales(ing).forEach(function(g){ if(g.k==="_destacado") put(g.k, g.l, g.t, ing.n, true) });
+  });
+  // ajustes por dosis: sustituyen lo heredado del ingrediente
+  ((window.POVR||{})[p.id]||[]).forEach(function(r){
+    if(!out[r.k]) return;                       // si el riesgo no ha saltado, no inventamos uno
+    if(!(ALWAYS[r.k] || P[r.k])) return;
+    out[r.k] = {k:r.k, l:r.l, t:r.t, by:out[r.k].by, gen:!P[r.k]};
+  });
+  (p.x||[]).forEach(function(r){
+    if(!(ALWAYS[r.k] || P[r.k])) return;
+    out[r.k] = {k:r.k, l:r.l, t:r.t, by:{}, own:true, gen:!P[r.k]};
+  });
+  return Object.keys(out).map(function(k){
+      var c = out[k];
+      c.src = (c.by && c.by[c.l] ? c.by[c.l] : []).filter(function(v,i,a){ return v && a.indexOf(v)===i });
+      return c;
+    }).sort(function(a,b){ return ORDER[a.l]-ORDER[b.l] });
+}
+function prodLevel(p){
+  var r = prodRisks(p).filter(function(x){ return !x.gen });
+  for(var i=0;i<r.length;i++) if(r[i].l==="R") return "R";
+  for(var j=0;j<r.length;j++) if(r[j].l==="A") return "A";
+  return "V";
+}
+function eur(v){ return v? v.toFixed(2).replace('.',',')+" €" : "" }
+function thumb(p){
+  return p.img ? '<img class="th" src="'+p.img+'.jpg" alt="" loading="lazy">'
+               : '<span class="th tile"><b>'+esc(p.m.slice(0,1))+'</b></span>';
+}
+function prodRowHTML(p){
+  var lv = prodLevel(p);
+  var r = prodRisks(p).filter(function(x){ return !x.gen && x.l!=="V" });
+  var sub = r.length ? r.slice(0,2).map(function(x){return labelOf(x.k)}).join(" · ")+(r.length>2?" +"+(r.length-2):"")
+                     : (p.m+" · "+p.f);
+  return '<button class="row prow" type="button" data-prod="'+p.id+'"><span class="dot '+lv+'"></span>'+
+    thumb(p)+'<span class="rw"><b>'+esc(p.n)+(p.pend?' <i class="pend">ficha por confirmar</i>':'')+'</b><small>'+esc(sub)+'</small></span>'+
+    '<span class="pvp">'+eur(p.pvp)+'</span></button>';
+}
+function matchProds(tk, term){
+  var sc = {};
+  PROD.forEach(function(p){
+    var v = 0;
+    if(term.length>1 && p._s.indexOf(term)>-1) v += 3;
+    tk.forEach(function(t){ if(t.length>3 && p._s.indexOf(t)>-1) v += 1 });
+    if(v) sc[p.id] = v;
+  });
+  return Object.keys(sc).sort(function(a,b){return sc[b]-sc[a]}).map(function(i){return PBYID[i]});
+}
+function prodsForNeed(need){
+  // solo los activos principales: si no, un multivitamínico sale para todo
+  var want = {}; need.p.forEach(function(i){ want[i]=1 });
+  return PROD.filter(function(p){ return (p.ing||[]).slice(0,4).some(function(i){ return want[i] }) })
+             .sort(function(a,b){ return ORDER[prodLevel(b)]-ORDER[prodLevel(a)] });
+}
+
 /* riesgos que disparan con el perfil actual + alérgenos declarados */
 function hits(p){
   var out=[], seen={};
@@ -172,7 +248,7 @@ function esc(t){ return String(t).replace(/[&<>"]/g,function(c){return {"&":"&am
 
 /* ================= render ================= */
 var body=document.getElementById("consultaBody"), q=document.getElementById("q");
-var current=null;
+var current=null;   // {t:'ing'|'prod', id}
 
 function pillText(){
   var n=activeKeys().length, b=document.getElementById("pillBtn");
@@ -183,15 +259,25 @@ function pillText(){
 
 function renderConsulta(){
   pillText();
-  if(current){ return renderDetail(current) }
+  if(current){ return current.t==="prod" ? renderProdDetail(current.id) : renderDetail(current.id) }
   var term=norm(q.value);
   if(term.length>0){
     var tk=tokens(q.value), nds=matchNeeds(tk), shown={}, html="";
+    var pr = matchProds(tk, term);
+    if(pr.length){
+      html += '<div class="sechead"><h2>En tu catálogo</h2><span class="n">'+pr.length+'</span></div>'+
+              '<div class="list">'+pr.slice(0,25).map(prodRowHTML).join("")+'</div>';
+    }
     nds.forEach(function(x){
       var list=byLevel(x.n.p.map(function(id){return BYID[id]}).filter(Boolean));
       list.forEach(function(p){ shown[p.id]=1 });
       var rojos=list.filter(function(p){return level(p)==="R"}).length;
-      html+='<div class="sechead"><h2>Para: '+esc(x.n.n)+'</h2><span class="n">'+list.length+'</span></div>'+
+      var pn = prodsForNeed(x.n).filter(function(z){ return pr.indexOf(z)<0 });
+      if(pn.length){
+        html+='<div class="sechead"><h2>Para '+esc(x.n.n.toLowerCase())+', de tu catálogo</h2><span class="n">'+pn.length+'</span></div>'+
+              '<div class="list">'+pn.map(prodRowHTML).join("")+'</div>';
+      }
+      html+='<div class="sechead"><h2>Ingredientes para: '+esc(x.n.n)+'</h2><span class="n">'+list.length+'</span></div>'+
         '<p class="note" style="margin-bottom:10px">'+
           (activeKeys().length
             ? (rojos? 'Ordenados de más a menos vendible con este cliente: empieza por arriba. '+(rojos===1?'El último no se lo vendas.':'Los '+rojos+' últimos no se los vendas.')
@@ -213,17 +299,23 @@ function renderConsulta(){
   if(!keys.length){
     var star=DB.filter(function(p){ return (p.r||[]).some(function(x){return x.k==="_destacado"}) });
     body.innerHTML =
-      '<div class="card" style="padding:16px"><h2 style="font-family:Fraunces,Georgia,serif;font-size:19px;font-weight:600;margin-bottom:7px">Empieza por el cliente</h2>'+
+      '<div class="card" style="padding:16px"><h2 style="font-family:Playfair Display,Georgia,serif;font-size:19px;font-weight:600;margin-bottom:7px">Empieza por el cliente</h2>'+
       '<p class="note">Entra alguien y te pide algo. Antes de buscar el producto, pásate a la pestaña <b>Cliente</b> y marca lo que te haya contado: medicación, embarazo, alergias, lo que sepas. Luego busca el producto aquí y el semáforo se pinta solo.</p>'+
       '<p class="note" style="margin-top:9px">Busca como te lo diría el cliente —«algo para dormir mejor», «para la retención de líquidos», «para el reflujo»— o directamente por el nombre del producto.</p></div>'+
+      '<div class="sechead"><h2>Tu catálogo</h2><span class="n">'+PROD.length+'</span></div>'+
+      '<div class="list">'+PROD.map(prodRowHTML).join("")+'</div>'+
       needChips+
-      '<div class="sechead"><h2><span class="star">★</span> Máxima vigilancia</h2><span class="n">'+star.length+'</span></div>'+
+      '<div class="sechead"><h2><span class="star">★</span> Ingredientes de máxima vigilancia</h2><span class="n">'+star.length+'</span></div>'+
       '<p class="note" style="margin-bottom:10px">Estos son los productos de tu lineal que más problemas dan. Merece la pena que te los sepas de memoria.</p>'+
       '<div class="list">'+star.map(rowHTML).join("")+"</div>";
     bindRows(); return;
   }
+  var pR=PROD.filter(function(p){return prodLevel(p)==="R"}), pA=PROD.filter(function(p){return prodLevel(p)==="A"});
   var rojos=DB.filter(function(p){return level(p)==="R"}), ambar=DB.filter(function(p){return level(p)==="A"});
-  var html='<div class="card" style="padding:14px 16px"><p class="note">Con los <b>'+keys.length+'</b> datos que has marcado, de los <b>'+DB.length+'</b> productos de la base: <b style="color:var(--rojo)">'+rojos.length+' no se venden</b>, <b style="color:var(--ambar)">'+ambar.length+' necesitan aviso</b> y <b style="color:var(--verde)">'+(DB.length-rojos.length-ambar.length)+' no dan alerta</b>. Busca arriba lo que te pida, con sus palabras o por el nombre del producto.</p></div>'+needChips;
+  var html='<div class="card" style="padding:14px 16px"><p class="note">Con los <b>'+keys.length+'</b> datos que has marcado, de las <b>'+PROD.length+'</b> referencias de tu catálogo: <b style="color:var(--rojo)">'+pR.length+' no se venden</b>, <b style="color:var(--ambar)">'+pA.length+' necesitan aviso</b> y <b style="color:var(--verde)">'+(PROD.length-pR.length-pA.length)+' no dan alerta</b>. En la base general de '+DB.length+' ingredientes, '+rojos.length+' salen en rojo.</p></div>'+
+    (pR.length? '<div class="sechead"><h2>De tu catálogo, no vender</h2><span class="n">'+pR.length+'</span></div><div class="list">'+pR.map(prodRowHTML).join("")+'</div>' : '')+
+    (pA.length? '<div class="sechead"><h2>De tu catálogo, con aviso</h2><span class="n">'+pA.length+'</span></div><div class="list">'+pA.map(prodRowHTML).join("")+'</div>' : '')+
+    needChips;
   if(rojos.length){ html+='<div class="sechead"><h2>No vender</h2><span class="n">'+rojos.length+'</span></div><div class="list">'+rojos.map(rowHTML).join("")+"</div>" }
   if(ambar.length){ html+='<div class="sechead"><h2>Vender con aviso</h2><span class="n">'+ambar.length+'</span></div><div class="list">'+ambar.map(rowHTML).join("")+"</div>" }
   if(!rojos.length && !ambar.length){ html+='<div class="card empty">Con este perfil no salta ninguna alerta en la base. Busca el producto concreto para leer sus avisos generales.</div>' }
@@ -238,7 +330,11 @@ function rowHTML(p){
 }
 function bindRows(){
   Array.prototype.forEach.call(body.querySelectorAll(".row"),function(b){
-    b.addEventListener("click",function(){ current=b.getAttribute("data-id"); window.scrollTo(0,0); renderConsulta() });
+    b.addEventListener("click",function(){
+      current = b.getAttribute("data-prod") ? {t:"prod", id:b.getAttribute("data-prod")}
+                                            : {t:"ing",  id:b.getAttribute("data-id")};
+      window.scrollTo(0,0); renderConsulta();
+    });
   });
   Array.prototype.forEach.call(body.querySelectorAll("[data-need]"),function(b){
     b.addEventListener("click",function(){
@@ -291,6 +387,61 @@ function renderDetail(id){
   html+='</div></article>';
   body.innerHTML=html;
   document.getElementById("backBtn").addEventListener("click",function(){ current=null; renderConsulta() });
+}
+
+function renderProdDetail(id){
+  var p = PBYID[id];
+  if(!p){ current=null; return renderConsulta() }
+  var lv = prodLevel(p), risks = prodRisks(p);
+  var prop = risks.filter(function(x){ return !x.gen }), gen = risks.filter(function(x){ return x.gen });
+  var v = VERDICT[lv], noProfile = !activeKeys().length;
+
+  var html = '<button class="back" type="button" id="backBtn">‹ Volver</button>'+
+    '<article class="verdict '+lv+'">'+
+      '<div class="vhead"><div class="vlabel">'+(noProfile?"Ficha de producto":"Veredicto")+'</div>'+
+      '<div class="vtitle">'+(noProfile?"Sin perfil marcado":v.l)+'</div>'+
+      '<p class="vsub">'+(noProfile?"Marca los datos del cliente y el semáforo se calcula solo. Abajo tienes la ficha completa.":v.s)+'</p></div>'+
+      '<div class="phead">'+thumb2(p)+
+        '<div class="pmeta"><div class="pbrand">'+esc(p.m)+(p.top?' · uso externo':'')+'</div>'+
+        '<h2 class="pname">'+esc(p.n)+'</h2>'+
+        '<div class="pfmt">'+esc(p.f||"")+'</div>'+
+        (p.pvp?'<div class="pprice">'+eur(p.pvp)+'</div>':'')+'</div></div>'+
+      '<div class="vbody">';
+
+  if(!noProfile && prop.length){
+    html += '<div class="reasons">'+prop.map(function(x){
+      return '<div class="reason '+x.l+'"><span class="tag">'+(x.l==="R"?"No":x.l==="A"?"Ojo":"Ok")+'</span>'+
+        '<p><b>'+esc(labelOf(x.k))+(x.src&&x.src.length?' — '+esc(x.src.join(", ")):'')+'</b>'+esc(x.t)+'</p></div>' }).join("")+'</div>';
+  }
+  if(gen.length){
+    html += '<div><div class="vlabel" style="color:var(--faint);margin-bottom:8px">Avisos para cualquier cliente</div><div class="reasons">'+
+      gen.map(function(x){ return '<div class="reason '+x.l+'"><span class="tag">'+(x.l==="R"?"No":"Ojo")+'</span>'+
+        '<p><b>'+esc(labelOf(x.k))+(x.src&&x.src.length?' — '+esc(x.src.join(", ")):'')+'</b>'+esc(x.t)+'</p></div>' }).join("")+'</div></div>';
+  }
+
+  html += '<dl class="kv">'+
+    '<dt>Para qué</dt><dd>'+esc(p.u||"—")+'</dd>'+
+    (p.comp?'<dt>Composición</dt><dd>'+esc(p.comp)+'</dd>':'')+
+    (p.ean?'<dt>EAN</dt><dd style="font-variant-numeric:tabular-nums">'+esc(p.ean)+'</dd>':'')+
+    '</dl>';
+
+  if((p.ing||[]).length){
+    html += '<div><div class="vlabel" style="color:var(--faint);margin-bottom:8px">Lleva — toca para ver la ficha del ingrediente</div>'+
+      '<div class="chips">'+p.ing.map(function(i){
+        var ing = BYID[i]; if(!ing) return "";
+        return '<button class="chip ichip '+level(ing)+'" type="button" data-id="'+i+'">'+esc(ing.n)+'</button>';
+      }).join("")+'</div></div>';
+  }
+  html += '</div></article>';
+  body.innerHTML = html;
+  document.getElementById("backBtn").addEventListener("click",function(){ current=null; renderConsulta() });
+  Array.prototype.forEach.call(body.querySelectorAll(".ichip"),function(b){
+    b.addEventListener("click",function(){ current={t:"ing",id:b.getAttribute("data-id")}; window.scrollTo(0,0); renderConsulta() });
+  });
+}
+function thumb2(p){
+  return p.img ? '<img class="thbig" src="'+p.img+'.jpg" alt="'+esc(p.n)+'">'
+               : '<span class="thbig tile"><b>'+esc(p.m.slice(0,1))+'</b></span>';
 }
 
 /* ---- perfil ---- */

@@ -8,7 +8,6 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="description" content="MAVIA - Semaforo de mostrador. Herramienta interna de cribado de seguridad.">
 <style>
 html{color-scheme:light dark}
 :root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -103,6 +102,23 @@ main{padding-block:18px 56px}
 .rw b{display:block;font-weight:600;font-size:14.5px;overflow-wrap:anywhere}
 .rw small{display:block;color:var(--faint);font-size:12px;margin-top:1px;overflow-wrap:anywhere}
 .chevron{color:var(--faint);flex:none;font-size:13px}
+.th{width:34px;height:34px;flex:none;border-radius:7px;object-fit:contain;background:#fff;border:1px solid var(--line)}
+.th.tile{display:flex;align-items:center;justify-content:center;background:var(--brand)}
+.th.tile b{font-family:"Playfair Display",Georgia,serif;font-size:16px;color:var(--lima)}
+.pvp{flex:none;font-size:13px;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums}
+.phead{display:flex;gap:14px;align-items:flex-start;padding:14px 16px 0}
+.thbig{width:82px;height:82px;flex:none;border-radius:10px;object-fit:contain;background:#fff;border:1px solid var(--line)}
+.thbig.tile{display:flex;align-items:center;justify-content:center;background:var(--brand)}
+.thbig.tile b{font-family:"Playfair Display",Georgia,serif;font-size:34px;color:var(--lima)}
+.pmeta{min-width:0;flex:1}
+.pbrand{font-size:10px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:var(--faint)}
+.pname{font-family:"Playfair Display",Georgia,serif;font-size:21px;font-weight:600;letter-spacing:-.01em;margin-top:3px;line-height:1.15}
+.pfmt{font-size:12.5px;color:var(--muted);margin-top:4px}
+.pprice{font-size:17px;font-weight:700;margin-top:6px;font-variant-numeric:tabular-nums}
+.ichip{font-size:12px;padding:6px 10px;display:inline-flex;align-items:center;gap:6px}
+.ichip::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--verde)}
+.ichip.R::before{background:var(--rojo)} .ichip.A::before{background:var(--ambar)}
+.pend{font-style:normal;font-size:9.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ambar);background:var(--ambarbg);border:1px solid var(--ambarline);padding:2px 5px;border-radius:4px;white-space:nowrap}
 
 /* ---- verdict ---- */
 .verdict{border-radius:14px;overflow:hidden;border:1px solid var(--line);box-shadow:var(--sh);background:var(--surface)}
@@ -327,7 +343,10 @@ details[open] summary::before{content:"▾ "}
 <script src="d5.js"></script>
 <script src="d6.js"></script>
 <script src="d7.js"></script>
+<script src="d8.js"></script>
 <script src="needs.js"></script>
+<script src="prod.js"></script>
+<script src="ovr.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
